@@ -186,7 +186,7 @@ class FBAModel(KBaseObject, Model):
         else:
             return None
 
-    def _set_other_genome_refs(self, value: str):
+    def _set_other_genome_refs(self, value: list):
         self.notes[self.SBML_FIELD_OTHER_GENOME_REFS] = ";".join(value)
 
     other_genome_refs = property(_get_other_genome_refs, _set_other_genome_refs)
@@ -208,7 +208,7 @@ class FBAModel(KBaseObject, Model):
         else:
             return None
 
-    def _set_template_refs(self, value: str):
+    def _set_template_refs(self, value: list):
         self.notes[self.SBML_FIELD_TEMPLATE_REFSS] = ";".join(value)
 
     template_refs = property(_get_template_refs, _set_template_refs)
