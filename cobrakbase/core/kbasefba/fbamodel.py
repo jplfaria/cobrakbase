@@ -178,6 +178,17 @@ class FBAModel(KBaseObject, Model):
 
     genome_ref = property(_get_genome_ref, _set_genome_ref)
 
+    def _get_other_genome_refs(self):
+        if self.SBML_FIELD_OTHER_GENOME_REFS in self.notes:
+            return self.notes[self.SBML_FIELD_OTHER_GENOME_REFS].split(";")
+        else:
+            return None
+
+    def _set_other_genome_refs(self, value: str):
+        self.notes[self.SBML_FIELD_OTHER_GENOME_REFS] = ";".join(value)
+
+    other_genome_refs = property(_get_other_genome_refs, _set_other_genome_refs)
+
     def _get_template_ref(self):
         if self.SBML_FIELD_TEMPLATE_REFS in self.notes:
             return self.notes[self.SBML_FIELD_TEMPLATE_REFS]
@@ -188,6 +199,17 @@ class FBAModel(KBaseObject, Model):
         self.notes[self.SBML_FIELD_TEMPLATE_REFS] = value
 
     template_ref = property(_get_template_ref, _set_template_ref)
+
+    def _get_template_refs(self):
+        if self.SBML_FIELD_TEMPLATE_REFSS in self.notes:
+            return self.notes[self.SBML_FIELD_TEMPLATE_REFSS].split(";")
+        else:
+            return None
+
+    def _set_template_refs(self, value: str):
+        self.notes[self.SBML_FIELD_TEMPLATE_REFSS] = ";".join(value)
+
+    template_refs = property(_get_template_refs, _set_template_refs)
 
     def _get_gapgens(self):
         if self.SBML_FIELD_GAPGENS in self.notes:
