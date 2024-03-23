@@ -147,10 +147,10 @@ class KBaseGenome(KBaseObject, MSGenome):
                 @param args: KBase workspace args
         """
 
-        MSGenome.__init__(self)
         if info is None:
             info = KBaseObjectInfo(object_type="KBaseGenomes.Genome")
         KBaseObject.__init__(self, {}, info, args, info.type, ["ontology_events"])
+        MSGenome.__init__(self)
         self.id = genome_id
         self.scientific_name = scientific_name
         self.domain = domain
