@@ -32,21 +32,23 @@ class ModelReactionProteinSubunit:
     @staticmethod
     def from_json(data):
         return ModelReactionProteinSubunit(
-            data["role"],
-            data["triggering"] == 1,
-            data["optionalSubunit"] == 1,
-            data["note"],
+            data.get("role"),
+            data.get("triggering", 1) == 1,
+            data.get("optionalSubunit", 0) == 1,
+            data.get('note'),
             data["feature_refs"],
         )
 
     def get_data(self):
         d = {
-            "role": self.role,
-            "note": self.note,
             "triggering": 1 if self.triggering else 0,
             "optionalSubunit": 1 if self.optional else 0,
             "feature_refs": self.features,
         }
+        if self.role:
+            d['role'] = self.role
+        if self.note:
+            d['note'] = self.note
         return d
 
 
