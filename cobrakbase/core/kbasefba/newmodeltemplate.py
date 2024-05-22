@@ -66,14 +66,14 @@ class NewModelTemplate(MSTemplate):
                         last_id = int(number_part)
         return last_id
 
-    def get_complex(self, id):
-        return self.complexes.get_by_id(id)
+    def get_complex(self, complex_id):
+        return self.complexes.get_by_id(complex_id)
 
-    def get_reaction(self, id):
-        return self.reactions.get_by_id(id)
+    def get_reaction(self, reaction_id):
+        return self.reactions.get_by_id(reaction_id)
 
-    def get_role(self, id):
-        return self.roles.get_by_id(id)
+    def get_role(self, role_id):
+        return self.roles.get_by_id(role_id)
 
     def get_data(self):
         d = {
@@ -89,7 +89,7 @@ class NewModelTemplate(MSTemplate):
             "roles": list(map(lambda x: x.get_data(), self.roles)),
             "complexes": list(map(lambda x: x.get_data(), self.complexes)),
             "reactions": list(map(lambda x: x.get_data(), self.reactions)),
-            "biomasses": list(self.biomasses),
+            "biomasses": list(map(lambda x: x.get_data(), self.biomasses)),
             "pathways": [],
             "subsystems": [],
         }

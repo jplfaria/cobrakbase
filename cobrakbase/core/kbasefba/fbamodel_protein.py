@@ -59,6 +59,7 @@ class ModelReactionProteinSubunit:
             d["triggering"] = 0
             if self.triggering:
                 d["triggering"] = 1
+                
         return d
 
 
@@ -94,9 +95,10 @@ class ModelReactionProtein(Group):
             ModelReactionProteinSubunit.from_json(o)
             for o in data["modelReactionProteinSubunits"]
         ]
-        complex_id = data.get("complex_ref",None)
+
+        complex_id = data.get("complex_ref")
         return ModelReactionProtein(
-            complex_id, data.get("note",None), data.get("source",None), subunits, complex_id
+            complex_id, data.get("note"), data.get("source"), subunits, complex_id
         )
 
     def get_data(self):

@@ -8,7 +8,11 @@ logger = logging.getLogger(__name__)
 
 
 class CobraModelConverter:
-    def __init__(self, model, genome=None, template=None):
+    
+    def __init__(self, model, genome=None, template=None, bio_reactions=None, e="e"):
+        self.biomass_reactions_ids = bio_reactions
+        if self.biomass_reactions_ids is None:
+            self.biomass_reactions_ids = set()
         self.model = model
         self.model_id = model.id
         self.template = template
@@ -26,14 +30,14 @@ class CobraModelConverter:
         reaction_biomass.annotation = reaction.annotation
         return reaction_biomass
 
-    @staticmethod
-    def reaction_is_biomass(reaction):
+    def reaction_is_biomass(self, reaction):
         """
         detect biomass reaction from SBO term SBO:0000629
         """
         return (
             type(reaction) == Biomass
             or "sbo" in reaction.annotation
+            or reaction.id in self.biomass_reactions_ids
             and reaction.annotation["sbo"] == "SBO:0000629"
         )
 
@@ -54,19 +58,37 @@ class CobraModelConverter:
         assume reactions of size 1 as drain reactions
         if annotated with sbo SBO:0000176 overrides drain check
         """
+        drain_sbo_terms = {"SBO:0000632", "SBO:0000628"}
         if exclude is None:
             exclude = set()
-        if "sbo" in reaction.annotation and reaction.annotation["sbo"] == "SBO:0000176":
-            return False
-        if "sbo" in reaction.annotation and reaction.annotation["sbo"] in {
-            "SBO:0000632",
-            "SBO:0000628",
-        }:
-            return True
+        sbo_terms = reaction.annotation.get("sbo")
+        if sbo_terms:
+            if type(sbo_terms) is str:
+                if sbo_terms in drain_sbo_terms:
+                    return True
+                if sbo_terms == "SBO:0000176":
+                    return False
+            else:
+                if len(drain_sbo_terms & set(sbo_terms)) > 0:
+                    return True
+                if "SBO:0000176" in sbo_terms:
+                    return False
+
         return (
-            CobraModelConverter.get_seed_id(reaction, detect_from_id) not in exclude
+            CobraModelConverter._str_or_list_not_in_set(
+                CobraModelConverter.get_seed_id(reaction, detect_from_id), exclude)
             and len(reaction.metabolites) == 1
         )
+
+    @staticmethod
+    def _str_or_list_not_in_set(str_or_list, set_object):
+        test = False
+        if str_or_list:
+            if type(str_or_list) is str:
+                test = str_or_list in set_object
+            else:
+                test = len(set_object & set(str_or_list)) == 0
+        return test
 
     @staticmethod
     def reaction_is_exchange(reaction, detect_from_id=False, exclude=None):
@@ -82,7 +104,8 @@ class CobraModelConverter:
             return True
         compartments = reaction.compartments
         return (
-            CobraModelConverter.get_seed_id(reaction, detect_from_id) not in exclude
+            CobraModelConverter._str_or_list_not_in_set(
+                CobraModelConverter.get_seed_id(reaction, detect_from_id), exclude)
             and len(reaction.metabolites) == 1
             and len(compartments) == 1
             and (list(compartments)[0] == "e0" or list(compartments)[0] == "e")
@@ -109,7 +132,7 @@ class CobraModelConverter:
     @property
     def biomass_reactions(self):
         for reaction in self.model.reactions:
-            if CobraModelConverter.reaction_is_biomass(reaction):
+            if self.reaction_is_biomass(reaction):
                 yield reaction
 
     def build(self):
@@ -140,6 +163,8 @@ class CobraModelConverter:
                 logger.warning(f"duplicate metabolite {model_compound.id}")
 
         model_reactions = []
+        for r in self.model.reactions:
+            pass
         for r in self.metabolic_reactions:
             model_reaction = ModelReaction(
                 r.id,
@@ -229,6 +254,8 @@ class CobraModelConverter:
         }
         if self.get_genome_ref():
             model_base["genome_ref"] = self.get_genome_ref()
+
+        #cobra_model = FBAModel
 
         cobra_model = FBAModelBuilder(model_base).build()
         cobra_model.genome = self.genome
